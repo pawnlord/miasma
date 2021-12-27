@@ -10,6 +10,9 @@ typedef struct {
     int16_t no_sections;
     int32_t p_symtab;
     int16_t sz_optional;
+    
+    int eoheader;
+    int eoheaders;
 } header;
 
 typedef struct {
@@ -22,6 +25,8 @@ typedef struct {
     int16_t p_linenumber;
     int16_t no_relocs;
     int32_t characteristics;
+
+    int location;
 } section;
 
 int get_number(char* data, int index, int size){
@@ -44,12 +49,24 @@ int read_header(char* data, header* h){
     h->no_sections = get_number(data, start+2, 2);
     h->p_symtab = get_number(data, start+8, 4);
     h->sz_optional = get_number(data, start+16, 4);
-    
-
+    h->eoheader = start+20;
+    h->eoheaders = start+20+h->sz_optional;
 }
 
-int read_sections(char* data, section** p_sections){
-
+int read_sections(char* data, section* p_sections, header h){
+    int current_index = h.eoheaders;
+    printf("ns: %d\n", h.no_sections);
+        
+    for(int i = 0; i < h.no_sections; i++){
+        while(data[current_index] != '.'){
+            current_index += 1;
+        }
+        for(int namei = 0; namei < 8; namei++){
+            p_sections[i].name[namei] = data[current_index+namei];
+        }   
+        p_sections[i].location = current_index;
+        current_index+=40;
+    }
 }
 
 
@@ -69,12 +86,12 @@ int main(int argc, char** argv){
     }
     header h;
     read_header(data, &h);
-    printf("%x\n", h.machine);
-    printf("%d\n", h.no_sections);
-    printf("%x\n", h.p_symtab);
-    printf("%d\n", (uint)h.sz_optional);
     section* sections = malloc((h.no_sections)*sizeof(section));
-    read_sections(data, &sections);
+    read_sections(data, sections, h);
+    for(int i = 0; i < h.no_sections; i++){
+        printf("name %d: %s\n", i, sections[i].name);
+    }
+
     printf("\nbytes: %d\n", bytes);
         
 }
