@@ -24,6 +24,7 @@ typedef struct {
     int32_t p_relocs;
     int16_t p_linenumber;
     int16_t no_relocs;
+    int16_t no_linenumber;
     int32_t characteristics;
 
     int location;
@@ -56,16 +57,24 @@ int read_header(char* data, header* h){
 int read_sections(char* data, section* p_sections, header h){
     int current_index = h.eoheaders;
     printf("ns: %d\n", h.no_sections);
-        
-    for(int i = 0; i < h.no_sections; i++){
-        while(data[current_index] != '.'){
-            current_index += 1;
-        }
+    while(data[current_index] != '.'){
+        current_index += 1;
+    }
+    for(int i = 0; i < h.no_sections; i++, current_index+=40){
+
         for(int namei = 0; namei < 8; namei++){
             p_sections[i].name[namei] = data[current_index+namei];
         }   
+        p_sections[i].virtual_size = get_number(data, current_index+8, 4);
+        p_sections[i].virtual_address = get_number(data, current_index+12, 4);
+        p_sections[i].size_of_raw_data = get_number(data, current_index+16, 4);
+        p_sections[i].p_raw_data = get_number(data, current_index+20, 4);
+        p_sections[i].p_relocs = get_number(data, current_index+24, 4);
+        p_sections[i].p_linenumber = get_number(data, current_index+28, 4);
+        p_sections[i].no_relocs = get_number(data, current_index+32, 2);
+        p_sections[i].no_linenumber = get_number(data, current_index+34, 2);
+        p_sections[i].characteristics = get_number(data, current_index+36, 4);
         p_sections[i].location = current_index;
-        current_index+=40;
     }
 }
 
@@ -90,6 +99,15 @@ int main(int argc, char** argv){
     read_sections(data, sections, h);
     for(int i = 0; i < h.no_sections; i++){
         printf("name %d: %s\n", i, sections[i].name);
+        printf("virtual_size %d: %d\n", i, sections[i].virtual_size);
+        printf("virtual_address %d: %x\n", i, sections[i].virtual_address);
+        printf("size_of_raw_data %d: %d\n", i, sections[i].size_of_raw_data);
+        printf("p_raw_data %d: %x\n", i, sections[i].p_raw_data);
+        printf("p_relocs %d: %x\n", i, sections[i].p_relocs);
+        printf("p_linenumber %d: %x\n", i, sections[i].p_linenumber);
+        printf("no_relocs %d: %d\n", i, sections[i].no_relocs);
+        printf("no_linenumber %d: %d\n", i, sections[i].no_linenumber);
+        printf("characteristics %d: %b\n\n", i, sections[i].characteristics);
     }
 
     printf("\nbytes: %d\n", bytes);
