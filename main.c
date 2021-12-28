@@ -78,6 +78,18 @@ int read_sections(char* data, section* p_sections, header h){
     }
 }
 
+void debug_section(section s, int i){    
+    printf("name %d: %s\n", i, s.name);
+    printf("virtual_size %d: %d\n", i, (uint)s.virtual_size);
+    printf("virtual_address %d: %x\n", i, (uint)s.virtual_address);
+    printf("size_of_raw_data %d: %d\n", i, (uint)s.size_of_raw_data);
+    printf("p_raw_data %d: %x\n", i, (uint)s.p_raw_data);
+    printf("p_relocs %d: %x\n", i, (uint)s.p_relocs);
+    printf("p_linenumber %d: %x\n", i, (uint)s.p_linenumber);
+    printf("no_relocs %d: %d\n", i, (uint)s.no_relocs);
+    printf("no_linenumber %d: %d\n", i, (uint)s.no_linenumber);
+    printf("characteristics %d: %b\n\n", i,  (uint)s.characteristics);
+}
 
 int main(int argc, char** argv){
     // read header information
@@ -95,19 +107,11 @@ int main(int argc, char** argv){
     }
     header h;
     read_header(data, &h);
+    printf("p_symtab: %x", h.p_symtab);
     section* sections = malloc((h.no_sections)*sizeof(section));
     read_sections(data, sections, h);
     for(int i = 0; i < h.no_sections; i++){
-        printf("name %d: %s\n", i, sections[i].name);
-        printf("virtual_size %d: %d\n", i, sections[i].virtual_size);
-        printf("virtual_address %d: %x\n", i, sections[i].virtual_address);
-        printf("size_of_raw_data %d: %d\n", i, sections[i].size_of_raw_data);
-        printf("p_raw_data %d: %x\n", i, sections[i].p_raw_data);
-        printf("p_relocs %d: %x\n", i, sections[i].p_relocs);
-        printf("p_linenumber %d: %x\n", i, sections[i].p_linenumber);
-        printf("no_relocs %d: %d\n", i, sections[i].no_relocs);
-        printf("no_linenumber %d: %d\n", i, sections[i].no_linenumber);
-        printf("characteristics %d: %b\n\n", i, sections[i].characteristics);
+        debug_section(sections[i], i);
     }
 
     printf("\nbytes: %d\n", bytes);
