@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include "asm_table.h"
 typedef unsigned char uchar;
 typedef unsigned char uint;
 
@@ -29,6 +30,11 @@ typedef struct {
 
     int location;
 } section;
+
+typedef struct {
+    int byte_mode;
+    segment_register sreg;
+} state;
 
 int get_number(char* data, int index, int size){
     int result = 0;
@@ -91,6 +97,23 @@ void debug_section(section s, int i){
     printf("characteristics %d: %b\n\n", i,  (uint)s.characteristics);
 }
 
+void disassemble_sections(uchar* data, section* sections, header h){
+    state s = {1, ES};
+    operation* ops = initialize_optable();
+    for(int i = 0; i < 1; i++){
+        section sec = sections[i];
+        char* local_section = data+sec.p_raw_data;
+        printf("Disassembly for section %s: (@%x)\n", sec.name, sec.p_raw_data);
+        operation op;
+        for(int pointer = 0; pointer < sec.virtual_size; pointer++){
+            get_op(local_section[pointer] & 0xFF, s.byte_mode, ops, &op);
+            if(op.opcode != 0){
+                printf("@%x %x: %s %s\n", pointer+sec.p_raw_data, local_section[pointer] & 0xFF, op.name, op.arguments);
+            }
+        }
+    }
+}
+
 int main(int argc, char** argv){
     // read header information
     FILE* fp = fopen(argv[1], "rb");
@@ -98,7 +121,7 @@ int main(int argc, char** argv){
     int sz = ftell(fp);
     fseek(fp, 0L, SEEK_SET);
     uchar* data = malloc(sz);
-    char c;
+    uchar c;
     int bytes = 0;
     while(bytes < sz){
         c = fgetc((FILE*)fp);
@@ -107,13 +130,8 @@ int main(int argc, char** argv){
     }
     header h;
     read_header(data, &h);
-    printf("p_symtab: %x", h.p_symtab);
     section* sections = malloc((h.no_sections)*sizeof(section));
     read_sections(data, sections, h);
-    for(int i = 0; i < h.no_sections; i++){
-        debug_section(sections[i], i);
-    }
-
-    printf("\nbytes: %d\n", bytes);
-        
+    disassemble_sections(data, sections, h);
+    
 }
