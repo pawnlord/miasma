@@ -31,10 +31,6 @@ typedef struct {
     int location;
 } section;
 
-typedef struct {
-    int byte_mode;
-    segment_register sreg;
-} state;
 
 int get_number(char* data, int index, int size){
     int result = 0;
@@ -97,18 +93,80 @@ void debug_section(section s, int i){
     printf("characteristics %d: %b\n\n", i,  (uint)s.characteristics);
 }
 
+int disbin(int dec){
+    int bin = 0;
+    for(int i = 0; i < sizeof(dec)*8; i++){
+        bin+= ((dec>>i) * 1) * pow(10, i);
+    }
+    return bin;
+}
+
+void output_op(operation op, uchar* local_data, int pointer, state s){
+    // figure out if we have an mod r/m byte
+    int hasMRM = 0;
+    modrm_t mrm;
+    sib_t sib;
+    pointer+=1;
+    for(int i = 0; op.arguments[i+1] != 0; i++){
+        if(op.arguments[i] == 'r' && op.arguments[i+1] == 'm'){
+            hasMRM = 1;
+        }
+    }
+    if(hasMRM){
+        get_modrm(local_data[pointer], &mrm, s);
+        pointer+=1;
+        if(mrm.needs_sib){
+            get_sib(local_data[pointer], &sib, s);
+            pointer+=1;
+            mrm.mrm_register = sib.mrm_register;
+            mrm.reg = sib.reg;
+        }
+        mrm.disp_number = get_number(local_data, pointer, mrm.disp);
+    }
+    if(hasMRM){
+        printf("%x: %s %s (mrm: %x, %d [%d], %x)\n", op.opcode, op.name, op.arguments, local_data[pointer-2], mrm.reg, mrm.mrm_register, mrm.disp_number);
+    } else{
+            printf("%x: %s %s\n", op.opcode, op.name, op.arguments);
+    }
+}
+
 void disassemble_sections(uchar* data, section* sections, header h){
-    state s = {1, ES};
+    state s = {1, 1, ES};
     operation* ops = initialize_optable();
+    char* hex = malloc(100);
     for(int i = 0; i < 1; i++){
         section sec = sections[i];
         char* local_section = data+sec.p_raw_data;
         printf("Disassembly for section %s: (@%x)\n", sec.name, sec.p_raw_data);
         operation op;
+        int rep = 0;
         for(int pointer = 0; pointer < sec.virtual_size; pointer++){
-            get_op(local_section[pointer] & 0xFF, s.byte_mode, ops, &op);
+            get_op(local_section[pointer] & 0xFF, s.address_mode, ops, &op);
             if(op.opcode != 0){
-                printf("@%x %x: %s %s\n", pointer+sec.p_raw_data, local_section[pointer] & 0xFF, op.name, op.arguments);
+                output_op(op, local_section, pointer, s);
+            } else{
+                switch(op.readbyte){
+                    case 0xF3:
+                        rep = 1;
+                    break;
+                    case 0xF2:
+                        rep = 2;
+                    break;
+                    case 0xF0:
+                        rep = 3;
+                    break;
+                    case 0x67:
+                        s.address_mode = !s.address_mode;
+                    break;
+                    case 0x66:
+                        s.operand_mode = !s.operand_mode;
+                    break;
+                    default:;
+                        segment_register temp = get_sreg(op.readbyte);
+                        if(temp != -1){
+                            s.sreg = temp;
+                        }
+                }
             }
         }
     }
