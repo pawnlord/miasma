@@ -11,10 +11,10 @@ operation movalmo = {0xA0, "mov", {AX, MOFF}, 0xA0, 0};
 operation movamo32 = {0xA1, "mov", {AX, MOFF}, 0xA1, 1};
 operation movmoal = {0xA2, "mov", {MOFF, AX}, 0xA2, 0};
 operation movmoa32 = {0xA3, "mov", {MOFF, AX}, 0xA3, 1};
-operation movri = {0xB0, "mov", {REG, IMM}, 0xB0, 0};
-operation movri32 = {0xB8, "mov", {REG, IMM}, 0xB8, 1};
-operation movrmi = {0xC6, "mov", {MRM, IMM}, 0xC6, 0};
-operation movrmi32 = {0xC7, "mov", {MRM, IMM}, 0xC7, 1};
+operation movri = {0xB0, "mov", {REG, IMM8}, 0xB0, 0};
+operation movri32 = {0xB8, "mov", {REG, IMM32}, 0xB8, 1};
+operation movrmi = {0xC6, "mov", {MRM, IMM8}, 0xC6, 0};
+operation movrmi32 = {0xC7, "mov", {MRM, IMM32}, 0xC7, 1};
 operation learm32 = {0x8d, "lea", {REG, M}, 0x8d, 1};
 operation no_op = {0,"", {0,0}, 0, 0};
 // 15

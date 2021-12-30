@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 typedef enum {
-    REG = 0,  MRM = 1, SREG = 2, MOFF = 3, IMM = 4,
-    M = 5, AX = 6, CX = 7, DX = 8, BX = 9, SP = 10, BP = 11, SI = 12, DI = 13
+    REG = 0,  MRM = 1, SREG = 2, MOFF = 3, IMM8 = 4, IMM32 = 5,
+    M = 6, AX = 7, CX = 8, DX = 9, BX = 10, SP = 11, BP = 12, SI = 13, DI = 14
 } arg;
 
 typedef struct {

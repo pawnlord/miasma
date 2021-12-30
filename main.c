@@ -125,11 +125,16 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
     }
     strcpy(fullop, op.name);
     arg oargs[2] = {op.arguments.first, op.arguments.second};
+    int immediate_value;
     for(int i = 0; i < 2; i++){
         switch(oargs[i]){
             case MRM:
                 if(mrm.is_deref){
-                    sprintf(fullop, "%s [%d + 0x%x]", fullop, mrm.mrm_register, mrm.disp_number);
+                    if(mrm.disp == 0){
+                        sprintf(fullop, "%s [%d]", fullop, mrm.mrm_register);
+                    } else {
+                        sprintf(fullop, "%s [%d + 0x%x]", fullop, mrm.mrm_register, mrm.disp_number);
+                    }
                 } else {
                     sprintf(fullop, "%s %d", fullop, mrm.mrm_register);
                 }
@@ -137,19 +142,25 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
             case REG:
                 sprintf(fullop, "%s %d", fullop, mrm.reg);
             break;
-            case IMM:;
-                int immediate_value;
-                if(op.is_32){
-                    immediate_value = get_number(local_data, pointer, 2+s.operand_mode*2);
-                    pointer += 2+s.operand_mode*2;
-                } else {
-                    immediate_value = get_number(local_data, pointer, 1);    
-                    pointer += 1;
-                }
+            case IMM8:
+                immediate_value = get_number(local_data, pointer, 1);    
+                pointer += 1;
                 sprintf(fullop, "%s %x", fullop, immediate_value);
             break;
+            case IMM32:
+                immediate_value = get_number(local_data, pointer, 2+s.operand_mode*2);
+                pointer += 2+s.operand_mode*2;
+                sprintf(fullop, "%s %x", fullop, immediate_value);
+                
+            case MOFF:
+            break;
+            case SREG:
+
+            break;
+            case M:
+            break;
             default:
-                sprintf(fullop, "%s %d", fullop, oargs[i]-6);
+                sprintf(fullop, "%s %d", fullop, oargs[i]-AX);
             break;
         }
         if(i == 0){
