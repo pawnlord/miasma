@@ -103,35 +103,59 @@ int disbin(int dec){
 
 void output_op(operation op, uchar* local_data, int pointer, state s){
     // figure out if we have an mod r/m byte
-    int hasMRM = 0;
+    int hasMRM = (op.arguments.first == MRM || op.arguments.second == MRM), mrm_byte;
     modrm_t mrm;
     sib_t sib;
     pointer+=1;
-    for(int i = 0; op.arguments[i+1] != 0; i++){
-        if(op.arguments[i] == 'r' && op.arguments[i+1] == 'm'){
-            hasMRM = 1;
-        }
-    }
+
     if(hasMRM){
         get_modrm(local_data[pointer], &mrm, s);
+        mrm_byte = local_data[pointer];
         pointer+=1;
         if(mrm.needs_sib){
             get_sib(local_data[pointer], &sib, s);
             pointer+=1;
-            mrm.mrm_register = sib.mrm_register;
-            mrm.reg = sib.reg;
         }
         mrm.disp_number = get_number(local_data, pointer, mrm.disp);
+        pointer += mrm.disp;
     }
-    if(hasMRM){
-        printf("%x: %s %s (mrm: %x, %d [%d], %x)\n", op.opcode, op.name, op.arguments, local_data[pointer-2], mrm.reg, mrm.mrm_register, mrm.disp_number);
-    } else{
-            printf("%x: %s %s\n", op.opcode, op.name, op.arguments);
+    char* fullop = malloc(255); // if we have more than 255, we messed up
+    for(int i = 0; i < 255; i++){
+        fullop[i] = 0;
     }
+    strcpy(fullop, op.name);
+    arg oargs[2] = {op.arguments.first, op.arguments.second};
+    for(int i = 0; i < 2; i++){
+        switch(oargs[i]){
+            case MRM:
+                if(mrm.is_deref){
+                    sprintf(fullop, "%s [%d + 0x%x]", fullop, mrm.mrm_register, mrm.disp_number);
+                } else {
+                    sprintf(fullop, "%s %d", fullop, mrm.mrm_register);
+                }
+            break;
+            case REG:
+                sprintf(fullop, "%s %d", fullop, mrm.reg);
+            break;
+            case IMM:;
+                int immediate_value;
+                if(op.is_32){
+                    immediate_value = get_number(local_data, pointer, 2+s.operand_mode*2);
+                } else {
+                    immediate_value = get_number(local_data, pointer, 1);    
+                }
+                sprintf(fullop, "%s %x", fullop, mrm.mrm_register, immediate_value);
+            break;
+        }
+        if(i == 0){
+            strcat(fullop, ",");
+        }
+    }
+    printf("%x: %s\n", op.opcode, fullop);
 }
 
 void disassemble_sections(uchar* data, section* sections, header h){
-    state s = {1, 1, ES};
+    state s = {1, 1, SREG_NONE};
     operation* ops = initialize_optable();
     char* hex = malloc(100);
     for(int i = 0; i < 1; i++){
@@ -144,6 +168,7 @@ void disassemble_sections(uchar* data, section* sections, header h){
             get_op(local_section[pointer] & 0xFF, s.address_mode, ops, &op);
             if(op.opcode != 0){
                 output_op(op, local_section, pointer, s);
+                s.sreg = SREG_NONE;
             } else{
                 switch(op.readbyte){
                     case 0xF3:

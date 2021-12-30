@@ -4,17 +4,30 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+
+typedef enum {
+    REG = 0,  MRM = 1, SREG = 2, MOFF = 3, IMM = 4,
+    M = 5, AX = 6, CX = 7, DX = 8, BX = 9, SP = 10, BP = 11, SI = 12, DI = 13
+} arg;
+
+typedef struct {
+    arg first;
+    arg second;
+} args_t;
+
 typedef enum{
     ES = 0, CS, 
     SS, DS,
-    FS, GS
+    FS, GS,
+    SREG_NONE
 } segment_register;
 
 typedef struct {
     int opcode;
     char* name;
-    char* arguments;
+    args_t arguments;
     int readbyte; // for anything other than opcodes
+    int is_32;
 } operation;
 
 typedef  enum {
