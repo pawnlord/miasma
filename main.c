@@ -141,10 +141,15 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
                 int immediate_value;
                 if(op.is_32){
                     immediate_value = get_number(local_data, pointer, 2+s.operand_mode*2);
+                    pointer += 2+s.operand_mode*2;
                 } else {
                     immediate_value = get_number(local_data, pointer, 1);    
+                    pointer += 1;
                 }
-                sprintf(fullop, "%s %x", fullop, mrm.mrm_register, immediate_value);
+                sprintf(fullop, "%s %x", fullop, immediate_value);
+            break;
+            default:
+                sprintf(fullop, "%s %d", fullop, oargs[i]-6);
             break;
         }
         if(i == 0){
