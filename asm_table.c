@@ -144,3 +144,109 @@ void get_sib(int sib_byte, sib_t* sib, state s){
     sib->factor = (1<<sib->ss);
     sib->mrm_register = (sib->index == 0b100)?(NONE):(sib->index);
 }
+
+
+const char* reg_to_string(register reg, int size){
+    // 8
+    if(size == 1){
+        switch(reg){
+            case EAX:
+                return "AL";
+                break;
+            case ECX:
+                return "CL";
+                break;
+            case EDX:
+                return "DL";
+                break;
+            case EBX:
+                return "BL";
+                break;
+            case ESP:
+                return "AH";
+                break;
+            case EBP:
+                return "CH";
+                break;
+            case ESI:
+                return "DH";
+                break;
+            case EDI:
+                return "BH";
+                break;
+        }
+    }
+    // 16
+    if(size == 2){
+
+        switch(reg){
+            case EAX:
+                return "AX";
+                break;
+            case ECX:
+                return "CX";
+                break;
+            case EDX:
+                return "DX";
+                break;
+            case EBX:
+                return "BX";
+                break;
+            case ESP:
+                return "SP";
+                break;
+            case EBP:
+                return "BP";
+                break;
+            case ESI:
+                return "SI";
+                break;
+            case EDI:
+                return "DI";
+                break;
+            case BXpSI:
+                return "BX + SI";
+                break;
+            case BXpDI:
+                return "BX + DI";
+                break;
+            case BPpSI:
+                return "BP + SI";
+                break;
+            case BPpDI:
+                return "BP + DI";
+                break;
+        }
+    }
+    // 32
+    if(size == 4){
+
+        switch(reg){
+            case EAX:
+                return "EAX";
+                break;
+            case ECX:
+                return "ECX";
+                break;
+            case EDX:
+                return "EDX";
+                break;
+            case EBX:
+                return "EBX";
+                break;
+            case ESP:
+                return "ESP";
+                break;
+            case EBP:
+                return "EBP";
+                break;
+            case ESI:
+                return "ESI";
+                break;
+            case EDI:
+                return "EDI";
+                break;
+        }
+    }
+    
+}

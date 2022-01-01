@@ -69,6 +69,7 @@ void get_op(int opcode, int address_mode, operation* ops, operation* dest);
 
 segment_register get_sreg(int byte);
 
-void get_modrm(int modrm_byte, modrm_t* mrm, state s); 
-void get_sib(int sib_byte, sib_t* sib, state s); 
+void  get_modrm(int modrm_byte, modrm_t* mrm, state s); 
+void  get_sib(int sib_byte, sib_t* sib, state s); 
+const char* reg_to_string(register reg, int size);
 #endif

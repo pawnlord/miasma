@@ -127,20 +127,24 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
     arg oargs[2] = {op.arguments.first, op.arguments.second};
     int immediate_value;
     for(int i = 0; i < 2; i++){
+        int arg_size = 1;
+        if(op.is_32){
+            arg_size = 2+2*s.operand_mode;
+        }
         switch(oargs[i]){
             case MRM:
                 if(mrm.is_deref){
                     if(mrm.disp == 0){
-                        sprintf(fullop, "%s [%d]", fullop, mrm.mrm_register);
+                        sprintf(fullop, "%s [%s]", fullop, reg_to_string(mrm.mrm_register, 2+s.address_mode*2));
                     } else {
-                        sprintf(fullop, "%s [%d + 0x%x]", fullop, mrm.mrm_register, mrm.disp_number);
+                        sprintf(fullop, "%s [%s + 0x%x]", fullop, reg_to_string(mrm.mrm_register, 2+s.address_mode*2), mrm.disp_number);
                     }
                 } else {
-                    sprintf(fullop, "%s %d", fullop, mrm.mrm_register);
+                    sprintf(fullop, "%s %s", fullop, reg_to_string(mrm.mrm_register, arg_size));
                 }
             break;
             case REG:
-                sprintf(fullop, "%s %d", fullop, mrm.reg);
+                sprintf(fullop, "%s %s", fullop, reg_to_string(mrm.mrm_register, arg_size));
             break;
             case IMM8:
                 immediate_value = get_number(local_data, pointer, 1);    
@@ -160,7 +164,7 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
             case M:
             break;
             default:
-                sprintf(fullop, "%s %d", fullop, oargs[i]-AX);
+                sprintf(fullop, "%s %", fullop, reg_to_string(oargs[i]-AX, arg_size));
             break;
         }
         if(i == 0){
