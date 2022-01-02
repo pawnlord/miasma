@@ -159,7 +159,7 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
             case MOFF:
             break;
             case SREG:
-
+                sprintf(fullop, "%s %s", fullop, sreg_to_string(s.sreg));
             break;
             case M:
             break;
@@ -178,7 +178,7 @@ void disassemble_sections(uchar* data, section* sections, header h){
     state s = {1, 1, SREG_NONE};
     operation* ops = initialize_optable();
     char* hex = malloc(100);
-    for(int i = 0; i < 1; i++){
+    for(int i = 0; i < h.no_sections; i++){
         section sec = sections[i];
         char* local_section = data+sec.p_raw_data;
         printf("Disassembly for section %s: (@%x)\n", sec.name, sec.p_raw_data);

@@ -174,6 +174,9 @@ const char* reg_to_string(register reg, int size){
             case EDI:
                 return "BH";
                 break;
+            default:
+                return "NONE";
+                break;
         }
     }
     // 16
@@ -216,6 +219,9 @@ const char* reg_to_string(register reg, int size){
             case BPpDI:
                 return "BP + DI";
                 break;
+            default:
+                return "NONE";
+                break;
         }
     }
     // 32
@@ -246,7 +252,36 @@ const char* reg_to_string(register reg, int size){
             case EDI:
                 return "EDI";
                 break;
+            default:
+                return "NONE";
+                break;
         }
     }
     
+}
+
+const char* sreg_to_string(segment_register sreg){
+    switch(sreg){
+        case ES:
+            return "ES";
+            break;
+        case CS:
+            return "CS";
+            break;
+        case SS:
+            return "SS";
+            break;
+        case DS:
+            return "DS";
+            break;
+        case FS:
+            return "FS";
+            break;
+        case GS:
+            return "GS";
+            break;
+        default:
+            return "NONE";
+            break;
+    }
 }
