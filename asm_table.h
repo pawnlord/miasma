@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 typedef enum {
-    REG = 0,  MRM = 1, SREG = 2, MOFF8 = 3, MOFF32 = 4, IMM8, IMM32,
+    REG = 0,  MRM = 1, SREG = 2, MOFF, IMM8, IMM32,
     M, AX, CX, DX, BX, SP, BP, SI, DI
 } arg;
 

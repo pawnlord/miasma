@@ -156,14 +156,9 @@ void output_op(operation op, uchar* local_data, int pointer, state s){
                 pointer += 2+s.operand_mode*2;
                 sprintf(fullop, "%s %x", fullop, immediate_value);
             break;
-            case MOFF8:
-                immediate_value = get_number(local_data, pointer, 1);    
-                pointer += 1;
-                sprintf(fullop, "%s [%x]", fullop, immediate_value);
-            break;
-            case MOFF32:
-                immediate_value = get_number(local_data, pointer, 2+s.operand_mode*2);
-                pointer += 2+s.operand_mode*2;
+            case MOFF:
+                immediate_value = get_number(local_data, pointer, 2+s.address_mode*2);
+                pointer += 2+s.address_mode*2;
                 sprintf(fullop, "%s [%x]", fullop, immediate_value);
             break;
             case SREG:
